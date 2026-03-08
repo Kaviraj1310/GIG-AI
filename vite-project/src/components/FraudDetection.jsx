@@ -1,119 +1,77 @@
 import React, { useState } from "react";
 
-export default function FraudDetection(){
+export default function FraudDetection() {
 
-const [income,setIncome] = useState("");
-const [expenses,setExpenses] = useState("");
-const [emi,setEmi] = useState("");
-const [transactions,setTransactions] = useState("");
-const [result,setResult] = useState("");
+  const [income, setIncome] = useState("");
+  const [expenses, setExpenses] = useState("");
+  const [transactions, setTransactions] = useState("");
+  const [result, setResult] = useState(null);
 
-const checkFraud = () => {
+  const checkFraud = async () => {
 
-let warnings = [];
+    const res = await fetch("http://localhost:5000/api/fraud/check", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        income: Number(income),
+        expenses: Number(expenses),
+        transactions: Number(transactions)
+      })
+    });
 
-const i = Number(income);
-const e = Number(expenses);
-const m = Number(emi);
-const t = Number(transactions);
+    const data = await res.json();
+    setResult(data);
+  };
 
-/* RULES */
+  return (
+    <div className="card fraudCard">
 
-if(e > i){
-warnings.push("Expenses exceed income");
-}
+      <h3>Fraud Detection</h3>
 
-if(m > i * 0.6){
-warnings.push("EMI is unusually high compared to income");
-}
+      <input
+        type="number"
+        placeholder="Monthly Income ₹"
+        value={income}
+        onChange={(e)=>setIncome(e.target.value)}
+      />
 
-if(i > 100000 && t < 10){
-warnings.push("Low digital activity for high income");
-}
+      <input
+        type="number"
+        placeholder="Monthly Expenses ₹"
+        value={expenses}
+        onChange={(e)=>setExpenses(e.target.value)}
+      />
 
-if(i < 15000 && t > 120){
-warnings.push("Very high transactions for low income");
-}
+      <input
+        type="number"
+        placeholder="Monthly Transactions"
+        value={transactions}
+        onChange={(e)=>setTransactions(e.target.value)}
+      />
 
-/* RESULT */
+      <button onClick={checkFraud}>
+        Analyze Fraud Risk
+      </button>
 
-if(warnings.length === 0){
+      {result && (
+        <div className="fraudResult">
 
-setResult({
-type:"safe",
-message:"Data looks consistent. No fraud risk detected."
-});
+          <h4>Status: {result.status}</h4>
+          <p>Risk Score: {result.riskScore}</p>
 
-}else{
+          {result.warnings.length > 0 && (
+            <ul>
+              {result.warnings.map((w,i)=>(
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          )}
 
-setResult({
-type:"risk",
-message:warnings.join(". ")
-});
+        </div>
+      )}
 
-}
-
-};
-
-return(
-
-<div className="card" style={{marginTop:"30px"}}>
-
-<h2>Fraud Detection</h2>
-
-<input
-type="number"
-placeholder="Monthly Income ₹"
-value={income}
-onChange={(e)=>setIncome(e.target.value)}
-className="fraudInput"
-/>
-
-<input
-type="number"
-placeholder="Monthly Expenses ₹"
-value={expenses}
-onChange={(e)=>setExpenses(e.target.value)}
-className="fraudInput"
-/>
-
-<input
-type="number"
-placeholder="Existing EMI ₹"
-value={emi}
-onChange={(e)=>setEmi(e.target.value)}
-className="fraudInput"
-/>
-
-<input
-type="number"
-placeholder="Monthly Transactions"
-value={transactions}
-onChange={(e)=>setTransactions(e.target.value)}
-className="fraudInput"
-/>
-
-<button
-style={{marginTop:"15px"}}
-onClick={checkFraud}
->
-Check Risk
-</button>
-
-{result && (
-
-<div
-className={`fraudResult ${result.type}`}
->
-
-{result.type === "safe" ? "✅" : "⚠"} {result.message}
-
-</div>
-
-)}
-
-</div>
-
-);
-
+    </div>
+  );
 }

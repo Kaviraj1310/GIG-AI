@@ -1,8 +1,39 @@
-const express = require("express");
-const router = express.Router();
+export const checkFraud = async (req, res) => {
 
-const { detectFraud } = require("../controllers/fraudController");
+  const { income, expenses, transactions } = req.body;
 
-router.post("/check", detectFraud);
+  if (!income || !expenses || !transactions) {
+    return res.status(400).json({
+      message: "Missing input values"
+    });
+  }
 
-module.exports = router;
+  let riskScore = 0;
+  let warnings = [];
+
+  if (expenses > income) {
+    riskScore += 30;
+    warnings.push("Expenses higher than income.");
+  }
+
+  if (income > 150000 && transactions < 10) {
+    riskScore += 25;
+    warnings.push("Income very high but transaction activity low.");
+  }
+
+  if (transactions > 200 && income < 20000) {
+    riskScore += 20;
+    warnings.push("Transaction count unusually high.");
+  }
+
+  let status = "SAFE";
+
+  if (riskScore > 40) status = "HIGH RISK";
+  else if (riskScore > 20) status = "MEDIUM RISK";
+
+  res.json({
+    status,
+    riskScore,
+    warnings
+  });
+};

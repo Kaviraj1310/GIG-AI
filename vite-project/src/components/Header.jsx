@@ -1,5 +1,8 @@
 import React from "react";
-export default function Header({ theme, toggleTheme }) {
+import { useTranslation } from "react-i18next";
+import i18n from "i18next";
+
+function Header({ theme, toggleTheme, setLanguage }) {
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -7,21 +10,39 @@ export default function Header({ theme, toggleTheme }) {
   };
 
   return (
+
     <header className="glassHeader">
 
-      <div className="logo">Gig Credit AI</div>
+      <div className="logo">GigCredit AI</div>
 
-      <nav className="navMenu">
+      <nav>
+
         <button onClick={() => scrollTo("loans")}>Loans</button>
         <button onClick={() => scrollTo("simulator")}>Simulator</button>
         <button onClick={() => scrollTo("tools")}>Tools</button>
-        <button onClick={() => scrollTo("ai")}>AI</button>
+        <button onClick={() => scrollTo("assistant")}>AI</button>
+
       </nav>
 
-      <button className="themeBtn" onClick={toggleTheme}>
-        {theme === "dark" ? "☀ Light" : "🌙 Dark"}
-      </button>
+      <div className="actions">
+
+        {/* LANGUAGE SELECTOR */}
+
+        <select
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          <option value="en">English</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Tamil">Tamil</option>
+        </select>
+
+        <button onClick={toggleTheme}>
+          {theme === "dark" ? "☀ Light" : "🌙 Dark"}
+        </button>
+
+      </div>
 
     </header>
+
   );
 }
